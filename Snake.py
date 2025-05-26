@@ -22,10 +22,6 @@ background_surf.fill(black)
 FPS = 60
 FramePerSec = pygame.time.Clock()
 
-# Checking collisions
-# print(object1.colliderect(object2))
-# print(object1.collidepoint(50, 75))
-
 # Setting window title
 pygame.display.set_caption("Game")
 
@@ -53,11 +49,11 @@ class Player(pygame.sprite.Sprite):
         self.rect.x = self.x * tile_size
         self.rect.y = self.y * tile_size
         
-        if (self.rect.top > window_height):
+        if (self.rect.top >= window_height):
             self.rect.top = 0
             self.y = 0
         if (self.rect.top < 0):
-            self.rect.top = window_height
+            self.rect.top = window_height - tile_size
             self.y = window_height/tile_size
         if (self.rect.right > window_width):
             self.rect.x = 0
@@ -90,9 +86,9 @@ class Body(pygame.sprite.Sprite):
     def __init__(self, i):
         super().__init__ 
         self.i = i 
-        poo = body[self.i]
-        self.x = poo.prevx
-        self.y = poo.prevy
+        compare = body[self.i]
+        self.x = compare.prevx
+        self.y = compare.prevy
         self.surf = pygame.Surface((tile_size, tile_size))
         self.rect = self.surf.get_rect(topleft=(self.x, self.y))
         self.rect.x = self.x * tile_size
@@ -102,9 +98,9 @@ class Body(pygame.sprite.Sprite):
     def move(self):
         self.prevx = self.x
         self.prevy = self.y
-        poo = body[self.i]
-        self.x = poo.prevx
-        self.y = poo.prevy
+        compare = body[self.i]
+        self.x = compare.prevx
+        self.y = compare.prevy
         self.rect.x = self.x * tile_size
         self.rect.y = self.y * tile_size
         
@@ -119,8 +115,8 @@ class Fruit(pygame.sprite.Sprite):
         self.move()
         
     def move(self):
-        self.x = random.randint(1, int(window_width/tile_size))
-        self.y = random.randint(1, int(window_height/tile_size))
+        self.x = random.randint(0, int(window_width/tile_size) - 1)
+        self.y = random.randint(0, int(window_height/tile_size) - 1)
         self.rect.x = self.x * tile_size
         self.rect.y = self.y * tile_size
            
@@ -142,6 +138,8 @@ body_group = pygame.sprite.Group()
 # Game loop begin
 while True:
     
+    # DO NOT DELETE THIS CODE
+    # DELETING THIS CODE CAUSES THE GAME TO CRASH
     for event in pygame.event.get():
         if event.type == QUIT:
             pygame.quit() # close pygame window
@@ -172,8 +170,8 @@ while True:
       
     if (pygame.Rect.colliderect(Snake.rect, Apple.rect)):
         Apple.move()
-        poo = Body(body_count)
-        body.append(poo)
+        new = Body(body_count)
+        body.append(new)
         body_count += 1
             
     if (pygame.Rect.collidelist(Snake.rect, body[1:]) != -1):

@@ -221,8 +221,6 @@ while True:
         if (score > high_score):
             high_score = score
         score = 0
-      #  pygame.quit()
-      #  sys.exit()
     
     # Show score
     score_string = score_font.render(("Score: " + str(score)), True, white)

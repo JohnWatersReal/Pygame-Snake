@@ -12,7 +12,9 @@ black = pygame.Color(0, 0, 0)
 green = pygame.Color(0, 255, 0)
 red = pygame.Color(255, 0, 0)
 grey = pygame.Color(128, 128, 128)
+blue = pygame.Color(0, 0, 255)
 
+# Display Setup
 DISPLAYSURF = pygame.display.set_mode((window_width,window_height))
 background = Rect(0, 0, window_width, window_height)
 background_surf = pygame.Surface((window_width, window_height))
@@ -24,6 +26,9 @@ FramePerSec = pygame.time.Clock()
 
 # Setting window title
 pygame.display.set_caption("Game")
+
+# Setting up fonts
+font = pygame.font.SysFont("Comic_sans", 60)
 
 tile_size = 50
 
@@ -49,38 +54,43 @@ class Player(pygame.sprite.Sprite):
         self.rect.x = self.x * tile_size
         self.rect.y = self.y * tile_size
         
-        if (self.rect.top >= window_height):
-            self.rect.top = 0
+        if (self.rect.y >= window_height):
+            self.rect.y = 0
             self.y = 0
-        if (self.rect.top < 0):
-            self.rect.top = window_height - tile_size
-            self.y = window_height/tile_size
+        if (self.rect.y < 0):
+            self.rect.y = window_height
+            self.y = window_height/tile_size 
         if (self.rect.right > window_width):
             self.rect.x = 0
             self.x = 0
         if (self.rect.left < 0):
             self.rect.x = window_width
-            self.x = window_width/tile_size
+            self.x = window_width/tile_size 
             
             
     def changeDirection(self):
         pressed_keys = pygame.key.get_pressed()
-        if (pressed_keys[K_RIGHT]):
-            self.dx = 1
-            self.dy = 0
-        elif (pressed_keys[K_DOWN]):
-            self.dx = 0
-            self.dy = 1
-        elif (pressed_keys[K_LEFT]):
-            self.dx = -1
-            self.dy = 0
-        elif (pressed_keys[K_UP]):
-            self.dx = 0
-            self.dy = -1
+        if (self.dx == 0):
+            if (pressed_keys[K_RIGHT]):
+                self.dx = 1
+                self.dy = 0
+            elif (pressed_keys[K_LEFT]):
+                self.dx = -1
+                self.dy = 0
+            
+        if (self.dy == 0):
+            if (pressed_keys[K_DOWN]):
+                self.dx = 0
+                self.dy = 1
+            elif (pressed_keys[K_UP]):
+                self.dx = 0
+                self.dy = -1
+          
      
 Snake = Player() 
 body = []    
 body.append(Snake)
+score = 0
         
 class Body(pygame.sprite.Sprite):
     def __init__(self, i):
@@ -135,6 +145,7 @@ movement_tick = 0
 body_count = 0
 body_group = pygame.sprite.Group()
 
+
 # Game loop begin
 while True:
     
@@ -168,15 +179,23 @@ while True:
     else:
         movement_tick += 1
       
+    #if snake eats apple  
     if (pygame.Rect.colliderect(Snake.rect, Apple.rect)):
         Apple.move()
         new = Body(body_count)
         body.append(new)
         body_count += 1
+        score += 1
             
+    # if snake hits itself        
     if (pygame.Rect.collidelist(Snake.rect, body[1:]) != -1):
         pygame.quit()
         sys.exit()
+    
+    # Show score
+    score_string = font.render(("Score: " + str(score)), True, blue)
+    DISPLAYSURF.blit(score_string, (30, 30))
+    
     
     pygame.display.update()
     FramePerSec.tick(FPS)

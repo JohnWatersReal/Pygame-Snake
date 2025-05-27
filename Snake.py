@@ -12,7 +12,7 @@ black = pygame.Color(0, 0, 0)
 green = pygame.Color(0, 255, 0)
 red = pygame.Color(255, 0, 0)
 grey = pygame.Color(128, 128, 128)
-blue = pygame.Color(0, 0, 255)
+white = pygame.Color(255, 255, 255)
 
 # Display Setup
 DISPLAYSURF = pygame.display.set_mode((window_width,window_height))
@@ -28,18 +28,22 @@ FramePerSec = pygame.time.Clock()
 pygame.display.set_caption("Game")
 
 # Setting up fonts
-font = pygame.font.SysFont("Comic_sans", 60)
+score_font = pygame.font.SysFont("Comic_sans", 60)
+high_score_font = pygame.font.SysFont("Comic_sans", 30, False, True)
 
 tile_size = 50
+margin = 4
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         
         self.x = 0
-        self.y = 0
+        self.y = 4
+        self.prevx = self.x
+        self.prevy = self.y
         self.surf = pygame.Surface((tile_size, tile_size))
-        self.rect = self.surf.get_rect(topleft=(self.x, self.y))
+        self.rect = self.surf.get_rect(topleft=(self.x*tile_size, self.y*tile_size))
         self.surf.fill(green)
         self.dx = 1
         self.dy = 0
@@ -54,12 +58,14 @@ class Player(pygame.sprite.Sprite):
         self.rect.x = self.x * tile_size
         self.rect.y = self.y * tile_size
         
+        # going over or under the vertical limits
         if (self.rect.y >= window_height):
-            self.rect.y = 0
-            self.y = 0
-        if (self.rect.y < 0):
+            self.rect.y = margin*tile_size
+            self.y = margin
+        if (self.rect.y < margin*tile_size):
             self.rect.y = window_height
             self.y = window_height/tile_size 
+        # going over or under the horizonal limits
         if (self.rect.right > window_width):
             self.rect.x = 0
             self.x = 0
@@ -99,6 +105,8 @@ class Body(pygame.sprite.Sprite):
         compare = body[self.i]
         self.x = compare.prevx
         self.y = compare.prevy
+        self.prevx = self.x
+        self.prevy = self.y
         self.surf = pygame.Surface((tile_size, tile_size))
         self.rect = self.surf.get_rect(topleft=(self.x, self.y))
         self.rect.x = self.x * tile_size
@@ -125,26 +133,42 @@ class Fruit(pygame.sprite.Sprite):
         self.move()
         
     def move(self):
-        self.x = random.randint(0, int(window_width/tile_size) - 1)
-        self.y = random.randint(0, int(window_height/tile_size) - 1)
-        self.rect.x = self.x * tile_size
-        self.rect.y = self.y * tile_size
-           
-
-# Create player object
+        # self.x = random.randint(0, int(window_width/tile_size) - 1)
+        # self.y = random.randint(4, int(window_height/tile_size) - 1)
+        # self.rect.x = self.x * tile_size
+        # self.rect.y = self.y * tile_size
+        
+        # create a rect for every tile
+        move_sites = []
+        for x in range(0, int(window_width/tile_size)):
+            for y in range(margin, int(window_height/tile_size)):
+                this = Rect(x * tile_size, y * tile_size, tile_size, tile_size)
+                move_sites.append(this)
+        # remove every rect collidelisting with a member of body
+        for tile in move_sites:
+            if(pygame.Rect.collidelist(tile, body)):
+                move_sites.remove(tile)
+                
+        # choose a random one
+        index = random.randint(0, len(move_sites)-1)
+        tobe = move_sites[index]
+        self.rect = tobe
+        self.x = self.rect.x
+        self.y = self.rect.y
 
 Apple = Fruit()
 
 def draw_grid(tile_size):
-    for x in range(tile_size, window_width, tile_size):
-        pygame.draw.line(DISPLAYSURF, grey, (x, 0), (x, window_height))
-    for y in range(tile_size, window_height, tile_size):
+    # Draw vertical lines
+    for x in range(0, window_width, tile_size):
+        pygame.draw.line(DISPLAYSURF, grey, (x, margin*tile_size), (x, window_height))
+    # Draw horizontal lines
+    for y in range((margin*tile_size), window_height, tile_size):
         pygame.draw.line(DISPLAYSURF, grey, (0, y), (window_width, y))
     
 movement_tick = 0
 body_count = 0
-body_group = pygame.sprite.Group()
-
+high_score = 0
 
 # Game loop begin
 while True:
@@ -189,13 +213,22 @@ while True:
             
     # if snake hits itself        
     if (pygame.Rect.collidelist(Snake.rect, body[1:]) != -1):
-        pygame.quit()
-        sys.exit()
+        Snake.kill
+        Snake = Player()
+        body = []
+        body.append(Snake)
+        body_count = 0
+        if (score > high_score):
+            high_score = score
+        score = 0
+      #  pygame.quit()
+      #  sys.exit()
     
     # Show score
-    score_string = font.render(("Score: " + str(score)), True, blue)
+    score_string = score_font.render(("Score: " + str(score)), True, white)
+    high_score_text = high_score_font.render(("High Score: " + str(high_score)), True, white)
     DISPLAYSURF.blit(score_string, (30, 30))
-    
+    DISPLAYSURF.blit(high_score_text, (30, 120))
     
     pygame.display.update()
     FramePerSec.tick(FPS)

@@ -1,0 +1,41 @@
+========= SNAKE V0.1 =========
+             ____
+            / . .\
+MT          \  ---<
+             \  /
+   __________/ /
+-=:___________/
+
+==============================
+
+Gui:
+- Removed the colour blue from the game
+- Now features double the number of font formats!
+- Added score and high score tracker
+- Added ✮margins✮
+
+Gameplay: 
+- Movement can no longer be flipped immediately, i.e. going left to right, or up to down movements straight away
+- Dying no longer makes the game close, rather, a new game starts immediately
+
+Bugs:
+- Began a workaround on fruit spawning on top of the player. The groundwork has been set but it's not working for mysterious reasons
+
+Crashes:
+- (hopefully!) Solved game randomly crashing when eating fruit. To be tested - see lines 108-109 in Snake.py
+
+Known bugs and inefficiencies
+- Movement needs to be looked at and smoothened. Current movement tick system is very yuck
+- Going through the upper limit takes two movement cycles, I think - idk man I'm just a stupid uni student what do I know?
+- As stated before, fruit still spawns on top of player
+
+Areas to be implemented:
+- Title screen
+- 'You died! Try again?' Screen
+- Skill tree
+
+Meta elements:
+- Began numbering scheme for version lists
+
+References:
+- Ascii art retrieved from: https://www.asciiart.eu/animals/reptiles/snakes

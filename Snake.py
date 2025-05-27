@@ -1,6 +1,12 @@
 import pygame, sys, random
 from pygame.locals import *
 
+# Things to implement
+# - fix fruit spawns
+# - add pause button
+# - fix crash when doing a 180
+
+
 pygame.init()
 
 # Window Settings
@@ -108,9 +114,7 @@ class Body(pygame.sprite.Sprite):
         self.prevx = self.x
         self.prevy = self.y
         self.surf = pygame.Surface((tile_size, tile_size))
-        self.rect = self.surf.get_rect(topleft=(self.x, self.y))
-        self.rect.x = self.x * tile_size
-        self.rect.y = self.y * tile_size
+        self.rect = Rect(self.x * tile_size, self.y * tile_size, tile_size, tile_size)
         self.surf.fill(green)   
         
     def move(self):
@@ -133,26 +137,30 @@ class Fruit(pygame.sprite.Sprite):
         self.move()
         
     def move(self):
-        # self.x = random.randint(0, int(window_width/tile_size) - 1)
-        # self.y = random.randint(4, int(window_height/tile_size) - 1)
-        # self.rect.x = self.x * tile_size
-        # self.rect.y = self.y * tile_size
-        
+               
         # create a rect for every tile
         move_sites = []
         for x in range(0, int(window_width/tile_size)):
             for y in range(margin, int(window_height/tile_size)):
-                this = Rect(x * tile_size, y * tile_size, tile_size, tile_size)
+                this = Rect((x * tile_size), (y * tile_size), tile_size, tile_size)
                 move_sites.append(this)
-        # remove every rect collidelisting with a member of body
-        for tile in move_sites:
-            if(pygame.Rect.collidelist(tile, body)):
-                move_sites.remove(tile)
                 
+        # remove every rect collidelisting with a member of body
+       
+        num_checked = 0
+        move_to = []
+        while num_checked < 480:
+            #pygame.Rect.collidelist(tile, body) != -1
+            if (pygame.Rect.collidelist(move_sites[num_checked], body) != -1):
+                num_checked += 1
+            else:
+                move_to.append(move_sites[num_checked])
+                num_checked += 1
+
         # choose a random one
-        index = random.randint(0, len(move_sites)-1)
-        tobe = move_sites[index]
-        self.rect = tobe
+        index = random.randint(0, len(move_to)-1)
+        move_to_rect = move_to[index]
+        self.rect = move_to_rect
         self.x = self.rect.x
         self.y = self.rect.y
 
@@ -170,8 +178,9 @@ movement_tick = 0
 body_count = 0
 high_score = 0
 
+unpaused = True
 # Game loop begin
-while True:
+while unpaused:
     
     # DO NOT DELETE THIS CODE
     # DELETING THIS CODE CAUSES THE GAME TO CRASH
@@ -203,11 +212,11 @@ while True:
     else:
         movement_tick += 1
       
-    #if snake eats apple  
+    # if snake eats apple  
     if (pygame.Rect.colliderect(Snake.rect, Apple.rect)):
-        Apple.move()
         new = Body(body_count)
         body.append(new)
+        Apple.move()
         body_count += 1
         score += 1
             

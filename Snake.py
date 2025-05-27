@@ -2,10 +2,7 @@ import pygame, sys, random
 from pygame.locals import *
 
 # Things to implement
-# - fix fruit spawns
-# - add pause button
 # - fix crash when doing a 180
-
 
 pygame.init()
 
@@ -37,6 +34,10 @@ pygame.display.set_caption("Game")
 score_font = pygame.font.SysFont("Comic_sans", 60)
 high_score_font = pygame.font.SysFont("Comic_sans", 30, False, True)
 
+# Setting up pause screen
+pause_rect = Rect(window_width/3, window_height/3, window_width/3, window_height/3)
+
+# Setting up grid
 tile_size = 50
 margin = 4
 
@@ -174,13 +175,24 @@ def draw_grid(tile_size):
     for y in range((margin*tile_size), window_height, tile_size):
         pygame.draw.line(DISPLAYSURF, grey, (0, y), (window_width, y))
     
+def pause_check(paused):
+    while (paused):
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit() # close pygame window
+                sys.exit()    # stop the python script
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    paused = False 
+              
+
 movement_tick = 0
 body_count = 0
 high_score = 0
 
 unpaused = True
 # Game loop begin
-while unpaused:
+while True:
     
     # DO NOT DELETE THIS CODE
     # DELETING THIS CODE CAUSES THE GAME TO CRASH
@@ -188,6 +200,15 @@ while unpaused:
         if event.type == QUIT:
             pygame.quit() # close pygame window
             sys.exit()    # stop the python script
+        if event.type == KEYDOWN:
+            if event.key == K_ESCAPE:
+                print("this worked!")
+                pygame.draw.rect(DISPLAYSURF, white, pause_rect)
+                paused = score_font.render("PAUSED", True, black)
+                rect = paused.get_rect(center=(window_width/2, window_height/2))
+                DISPLAYSURF.blit(paused, rect)
+                pygame.display.update()
+                pause_check(True)
             
     # Draw the background
     DISPLAYSURF.blit(background_surf, background)

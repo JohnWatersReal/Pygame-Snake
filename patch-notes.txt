@@ -39,3 +39,20 @@ Meta elements:
 
 References:
 - Ascii art retrieved from: https://www.asciiart.eu/animals/reptiles/snakes
+
+========= SNAKE V0.2 =========
+               _                 
+             _|_|_
+            / . .\
+MT          \  ---<
+             \  /
+   __________/ /
+-=:___________/
+
+==============================
+
+Gui:
+- Now features a PAUSE MENU! WOW! Access by pressing Escape
+
+Bugs fixed:
+- Apples no longer spawn on top of the snake (at least they shouldn't) because python is really weird and if you have a (for x in list) pattern where you're removing an element from the list every iteration, it'll check for (number of loops done == number of items) so if you remove items, you remove the number of iterations it'll do anyway thanks for listening to my Ted talk.

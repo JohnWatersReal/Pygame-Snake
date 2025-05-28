@@ -2,7 +2,8 @@ import pygame, sys, random
 from pygame.locals import *
 
 # Things to implement
-# - fix crash when doing a 180
+# - fix doing 180 behaviour still a bit yuck ngl
+# - make only the tail and body move
 
 pygame.init()
 
@@ -70,36 +71,34 @@ class Player(pygame.sprite.Sprite):
             self.rect.y = margin*tile_size
             self.y = margin
         if (self.rect.y < margin*tile_size):
-            self.rect.y = window_height
-            self.y = window_height/tile_size 
+            self.rect.y = window_height - tile_size
+            self.y = window_height/tile_size - 1
         # going over or under the horizonal limits
         if (self.rect.right > window_width):
             self.rect.x = 0
             self.x = 0
         if (self.rect.left < 0):
-            self.rect.x = window_width
-            self.x = window_width/tile_size 
+            self.rect.x = window_width - tile_size
+            self.x = window_width/tile_size - 1
             
             
-    def changeDirection(self):
-        pressed_keys = pygame.key.get_pressed()
+    def changeDirection(self, key):
         if (self.dx == 0):
-            if (pressed_keys[K_RIGHT]):
+            if(key == K_RIGHT):
                 self.dx = 1
                 self.dy = 0
-            elif (pressed_keys[K_LEFT]):
+            elif (key == K_LEFT):
                 self.dx = -1
                 self.dy = 0
             
         if (self.dy == 0):
-            if (pressed_keys[K_DOWN]):
+            if (key == K_DOWN):
                 self.dx = 0
                 self.dy = 1
-            elif (pressed_keys[K_UP]):
+            elif (key == K_UP):
                 self.dx = 0
                 self.dy = -1
-          
-     
+         
 Snake = Player() 
 body = []    
 body.append(Snake)
@@ -209,6 +208,8 @@ while True:
                 DISPLAYSURF.blit(paused, rect)
                 pygame.display.update()
                 pause_check(True)
+            else: 
+                Snake.changeDirection(event.key)
             
     # Draw the background
     DISPLAYSURF.blit(background_surf, background)
@@ -224,7 +225,6 @@ while True:
     DISPLAYSURF.blit(Apple.surf, Apple.rect)
     
     # Handle snake behaviour
-    Snake.changeDirection()
     
     if (movement_tick == 5):
         movement_tick = 0

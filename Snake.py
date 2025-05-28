@@ -21,7 +21,7 @@ background_surf = pygame.Surface((window_width, window_height))
 background_surf.fill(black)
 
 # Setting Framerate
-FPS = 60
+FPS = 12
 FramePerSec = pygame.time.Clock()
 
 # Setting window title
@@ -37,6 +37,9 @@ pause_rect = Rect(window_width/3, window_height/3, window_width/3, window_height
 # Setting up grid
 tile_size = 50
 margin = 4
+
+# Snake object list
+body = []   
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
@@ -57,7 +60,6 @@ class Player(pygame.sprite.Sprite):
         self.y += self.dy
         self.rect.x = self.x * tile_size
         self.rect.y = self.y * tile_size
-        
         
         # going over or under the vertical limits
         if self.rect.y >= window_height:
@@ -101,10 +103,6 @@ class Player(pygame.sprite.Sprite):
                 self.dx = 0
                 self.dy = -1
          
-Snake = Player() 
-body = []    
-body.append(Snake)
-
 class Tail(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__
@@ -168,8 +166,6 @@ class Fruit(pygame.sprite.Sprite):
         self.x = self.rect.x
         self.y = self.rect.y
 
-Apple = Fruit()
-
 def draw_grid(tile_size):
     # Draw vertical lines
     for x in range(0, window_width, tile_size):
@@ -187,34 +183,29 @@ def pause_check(paused):
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
                     paused = False 
-              
-# Global variables
-score = 0
-movement_tick = 0
-high_score = 0
-score_string = score_font.render(("Score: " + str(score)), True, white)
-high_score_text = high_score_font.render(("High Score: " + str(high_score)), True, white)
-
+   
+# Global variables 
+snake = Player() 
+body.append(snake)
+apple = Fruit()
 tail = Tail()
 tail_move = True
 body.append(tail)
-
 starting_body = Body(1, 4)
 body.append(starting_body)
-
+score = 0
+high_score = 0
 unpaused = True
 # Game loop begin
 while True:
-    
-    # DO NOT DELETE THIS CODE
-    # DELETING THIS CODE CAUSES THE GAME TO CRASH
+
+    # Handle events
     for event in pygame.event.get():
         if event.type == QUIT:
             pygame.quit() # close pygame window
             sys.exit()    # stop the python script
-        if event.type == KEYDOWN:
+        elif event.type == KEYDOWN:
             if event.key == K_ESCAPE:
-                print("this worked!")
                 pygame.draw.rect(DISPLAYSURF, white, pause_rect)
                 paused = score_font.render("PAUSED", True, black)
                 rect = paused.get_rect(center=(window_width/2, window_height/2))
@@ -222,7 +213,7 @@ while True:
                 pygame.display.update()
                 pause_check(True)
             else: 
-                Snake.change_direction_flag(event.key)
+                snake.change_direction_flag(event.key)
             
     # Draw the background
     DISPLAYSURF.blit(background_surf, background)
@@ -235,45 +226,38 @@ while True:
         DISPLAYSURF.blit(entity.surf, entity.rect)
         
     # Draw the fruit
-    DISPLAYSURF.blit(Apple.surf, Apple.rect)
+    DISPLAYSURF.blit(apple.surf, apple.rect)
     
     # Handle snake movement
-    if movement_tick == 5:
-        Snake.change_direction()
-        movement_tick = 0
-        Snake.move()
-        # if snake hits itself
-        if pygame.Rect.collidelist(Snake.rect, body[1:]) != -1:
-            del(Snake)
-            Snake = Player()
-            del(tail)
-            tail = Tail()
-            new = Body(1, 4)
-            body = []
-            body.append(Snake)
-            body.append(tail)
-            body.append(new)
-            if score > high_score:
-                high_score = score
-                high_score_text = high_score_font.render(("High Score: " + str(high_score)), True, white)
-            score = 0
-            score_string = score_font.render(("Score: " + str(score)), True, white)
-            continue
-        if tail_move:
+    snake.change_direction()
+    snake.move()
+    if tail_move:
             tail.move()
-        tail_move = True
-    else:
-        movement_tick += 1
+    tail_move = True
       
     # if snake eats apple  
-    if pygame.Rect.colliderect(Snake.rect, Apple.rect):
+    if pygame.Rect.colliderect(snake.rect, apple.rect):
         tail_move = False
-        Apple.move()
-        score += 1
-        score_string = score_font.render(("Score: " + str(score)), True, white)  
+        apple.move()
+        score += 1 
     
+    # if snake hits itself
+    if pygame.Rect.collidelist(snake.rect, body[1:]) != -1:
+        del(snake)
+        snake = Player()
+        del(tail)
+        tail = Tail()
+        new = Body(1, 4)
+        body = []
+        body.extend([snake, tail, new])
+        if score > high_score:
+            high_score = score
+        score = 0
+        
     # Show score
+    score_string = score_font.render(("Score: " + str(score)), True, white)
     DISPLAYSURF.blit(score_string, (30, 30))
+    high_score_text = high_score_font.render(("High Score: " + str(high_score)), True, white)
     DISPLAYSURF.blit(high_score_text, (30, 120))
     
     pygame.display.update()

@@ -1,9 +1,6 @@
 import pygame, sys, random
 from pygame.locals import *
 
-# Things to implement
-# - make only the tail and body move
-
 pygame.init()
 
 # Window Settings

@@ -45,10 +45,8 @@ class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.flag = 0
-        self.x = 0
+        self.x = 2
         self.y = 4
-        self.prevx = self.x
-        self.prevy = self.y
         self.surf = pygame.Surface((tile_size, tile_size))
         self.rect = self.surf.get_rect(topleft=(self.x*tile_size, self.y*tile_size))
         self.surf.fill(green)
@@ -56,13 +54,13 @@ class Player(pygame.sprite.Sprite):
         self.dy = 0
         
     def move(self):
-        self.prevx = self.x
-        self.prevy = self.y
-        
+        new = Body(self.x, self.y)
+        body.append(new)
         self.x += self.dx
         self.y += self.dy
         self.rect.x = self.x * tile_size
         self.rect.y = self.y * tile_size
+        
         
         # going over or under the vertical limits
         if self.rect.y >= window_height:
@@ -110,28 +108,31 @@ Snake = Player()
 body = []    
 body.append(Snake)
 
+class Tail(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__
+        self.x = 0
+        self.y = 4
+        self.surf = pygame.Surface((tile_size, tile_size))
+        self.rect = Rect(self.x * tile_size, self.y * tile_size, tile_size, tile_size)
+        self.surf.fill(green)  
+        
+    def move(self):
+        compare = body[2]
+        self.x = compare.x
+        self.y = compare.y
+        self.rect = Rect(self.x * tile_size, self.y * tile_size, tile_size, tile_size)
+        del body[2]
+        
         
 class Body(pygame.sprite.Sprite):
-    def __init__(self, i):
+    def __init__(self, x, y):
         super().__init__ 
-        self.i = i 
-        compare = body[self.i]
-        self.x = compare.prevx
-        self.y = compare.prevy
-        self.prevx = self.x
-        self.prevy = self.y
+        self.x = x
+        self.y = y
         self.surf = pygame.Surface((tile_size, tile_size))
         self.rect = Rect(self.x * tile_size, self.y * tile_size, tile_size, tile_size)
         self.surf.fill(green)   
-        
-    def move(self):
-        self.prevx = self.x
-        self.prevy = self.y
-        compare = body[self.i]
-        self.x = compare.prevx
-        self.y = compare.prevy
-        self.rect.x = self.x * tile_size
-        self.rect.y = self.y * tile_size
         
 class Fruit(pygame.sprite.Sprite):
     def __init__(self):
@@ -193,10 +194,16 @@ def pause_check(paused):
 # Global variables
 score = 0
 movement_tick = 0
-body_count = 0
 high_score = 0
 score_string = score_font.render(("Score: " + str(score)), True, white)
 high_score_text = high_score_font.render(("High Score: " + str(high_score)), True, white)
+
+tail = Tail()
+tail_move = True
+body.append(tail)
+
+starting_body = Body(1, 4)
+body.append(starting_body)
 
 unpaused = True
 # Game loop begin
@@ -224,7 +231,7 @@ while True:
     DISPLAYSURF.blit(background_surf, background)
     
     # Draw grid
-    draw_grid(50)
+    draw_grid(tile_size)
       
     # Draw the snake and body
     for entity in body:
@@ -233,37 +240,40 @@ while True:
     # Draw the fruit
     DISPLAYSURF.blit(Apple.surf, Apple.rect)
     
-    # Handle snake behaviour
-    
+    # Handle snake movement
     if movement_tick == 5:
         Snake.change_direction()
         movement_tick = 0
-        for entity in body:
-            entity.move()
+        Snake.move()
+        # if snake hits itself
+        if pygame.Rect.collidelist(Snake.rect, body[1:]) != -1:
+            del(Snake)
+            Snake = Player()
+            del(tail)
+            tail = Tail()
+            new = Body(1, 4)
+            body = []
+            body.append(Snake)
+            body.append(tail)
+            body.append(new)
+            if score > high_score:
+                high_score = score
+                high_score_text = high_score_font.render(("High Score: " + str(high_score)), True, white)
+            score = 0
+            score_string = score_font.render(("Score: " + str(score)), True, white)
+            continue
+        if tail_move:
+            tail.move()
+        tail_move = True
     else:
         movement_tick += 1
       
     # if snake eats apple  
     if pygame.Rect.colliderect(Snake.rect, Apple.rect):
-        new = Body(body_count)
-        body.append(new)
+        tail_move = False
         Apple.move()
-        body_count += 1
         score += 1
-        score_string = score_font.render(("Score: " + str(score)), True, white)
-            
-    # if snake hits itself        
-    if pygame.Rect.collidelist(Snake.rect, body[1:]) != -1:
-        Snake.kill
-        Snake = Player()
-        body = []
-        body.append(Snake)
-        body_count = 0
-        if score > high_score:
-            high_score = score
-            high_score_text = high_score_font.render(("High Score: " + str(high_score)), True, white)
-        score = 0
-        score_string = score_font.render(("Score: " + str(score)), True, white)
+        score_string = score_font.render(("Score: " + str(score)), True, white)  
     
     # Show score
     DISPLAYSURF.blit(score_string, (30, 30))
@@ -271,3 +281,4 @@ while True:
     
     pygame.display.update()
     FramePerSec.tick(FPS)
+    

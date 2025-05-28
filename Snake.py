@@ -21,7 +21,7 @@ background_surf = pygame.Surface((window_width, window_height))
 background_surf.fill(black)
 
 # Setting Framerate
-FPS = 12
+FPS = 60
 FramePerSec = pygame.time.Clock()
 
 # Setting window title
@@ -186,16 +186,15 @@ def pause_check(paused):
    
 # Global variables 
 snake = Player() 
-body.append(snake)
-apple = Fruit()
-tail = Tail()
-tail_move = True
-body.append(tail)
 starting_body = Body(1, 4)
-body.append(starting_body)
+tail = Tail()
+body.extend([snake, tail, starting_body])
+tail_move = True
+apple = Fruit()
 score = 0
 high_score = 0
 unpaused = True
+movement_tick = 0
 # Game loop begin
 while True:
 
@@ -229,11 +228,15 @@ while True:
     DISPLAYSURF.blit(apple.surf, apple.rect)
     
     # Handle snake movement
-    snake.change_direction()
-    snake.move()
-    if tail_move:
-            tail.move()
-    tail_move = True
+    if movement_tick == 4:
+        snake.change_direction()
+        snake.move()
+        movement_tick = 0
+        if tail_move:
+                tail.move()
+        tail_move = True
+    else:
+        movement_tick += 1
       
     # if snake eats apple  
     if pygame.Rect.colliderect(snake.rect, apple.rect):

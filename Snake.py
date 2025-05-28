@@ -2,7 +2,6 @@ import pygame, sys, random
 from pygame.locals import *
 
 # Things to implement
-# - fix doing 180 behaviour still a bit yuck ngl
 # - make only the tail and body move
 
 pygame.init()
@@ -45,7 +44,7 @@ margin = 4
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        
+        self.flag = 0
         self.x = 0
         self.y = 4
         self.prevx = self.x
@@ -57,7 +56,6 @@ class Player(pygame.sprite.Sprite):
         self.dy = 0
         
     def move(self):
-        
         self.prevx = self.x
         self.prevy = self.y
         
@@ -67,42 +65,51 @@ class Player(pygame.sprite.Sprite):
         self.rect.y = self.y * tile_size
         
         # going over or under the vertical limits
-        if (self.rect.y >= window_height):
+        if self.rect.y >= window_height:
             self.rect.y = margin*tile_size
             self.y = margin
-        if (self.rect.y < margin*tile_size):
+        if self.rect.y < margin*tile_size:
             self.rect.y = window_height - tile_size
             self.y = window_height/tile_size - 1
         # going over or under the horizonal limits
-        if (self.rect.right > window_width):
+        if self.rect.right > window_width:
             self.rect.x = 0
             self.x = 0
-        if (self.rect.left < 0):
+        if self.rect.left < 0:
             self.rect.x = window_width - tile_size
             self.x = window_width/tile_size - 1
             
+    def change_direction_flag(self, key):
+        if self.dx == 0:
+            if key == K_RIGHT:
+                self.flag = 0
+            elif key == K_LEFT:
+                self.flag = 1
+        elif self.dy == 0:
+            if key == K_DOWN:
+                self.flag = 2
+            elif key == K_UP:
+                self.flag = 3       
             
-    def changeDirection(self, key):
-        if (self.dx == 0):
-            if(key == K_RIGHT):
+    def change_direction(self):
+            if self.flag == 0:
                 self.dx = 1
                 self.dy = 0
-            elif (key == K_LEFT):
+            elif self.flag == 1:
                 self.dx = -1
                 self.dy = 0
-            
-        if (self.dy == 0):
-            if (key == K_DOWN):
+     
+            elif self.flag == 2:
                 self.dx = 0
                 self.dy = 1
-            elif (key == K_UP):
+            elif self.flag == 3:
                 self.dx = 0
                 self.dy = -1
          
 Snake = Player() 
 body = []    
 body.append(Snake)
-score = 0
+
         
 class Body(pygame.sprite.Sprite):
     def __init__(self, i):
@@ -136,8 +143,7 @@ class Fruit(pygame.sprite.Sprite):
         self.rect = self.surf.get_rect(topleft=(self.x, self.y))
         self.move()
         
-    def move(self):
-               
+    def move(self):   
         # create a rect for every tile
         move_sites = []
         for x in range(0, int(window_width/tile_size)):
@@ -151,7 +157,7 @@ class Fruit(pygame.sprite.Sprite):
         move_to = []
         while num_checked < 480:
             #pygame.Rect.collidelist(tile, body) != -1
-            if (pygame.Rect.collidelist(move_sites[num_checked], body) != -1):
+            if pygame.Rect.collidelist(move_sites[num_checked], body) != -1:
                 num_checked += 1
             else:
                 move_to.append(move_sites[num_checked])
@@ -184,10 +190,13 @@ def pause_check(paused):
                 if event.key == K_ESCAPE:
                     paused = False 
               
-
+# Global variables
+score = 0
 movement_tick = 0
 body_count = 0
 high_score = 0
+score_string = score_font.render(("Score: " + str(score)), True, white)
+high_score_text = high_score_font.render(("High Score: " + str(high_score)), True, white)
 
 unpaused = True
 # Game loop begin
@@ -209,7 +218,7 @@ while True:
                 pygame.display.update()
                 pause_check(True)
             else: 
-                Snake.changeDirection(event.key)
+                Snake.change_direction_flag(event.key)
             
     # Draw the background
     DISPLAYSURF.blit(background_surf, background)
@@ -226,7 +235,8 @@ while True:
     
     # Handle snake behaviour
     
-    if (movement_tick == 5):
+    if movement_tick == 5:
+        Snake.change_direction()
         movement_tick = 0
         for entity in body:
             entity.move()
@@ -234,27 +244,28 @@ while True:
         movement_tick += 1
       
     # if snake eats apple  
-    if (pygame.Rect.colliderect(Snake.rect, Apple.rect)):
+    if pygame.Rect.colliderect(Snake.rect, Apple.rect):
         new = Body(body_count)
         body.append(new)
         Apple.move()
         body_count += 1
         score += 1
+        score_string = score_font.render(("Score: " + str(score)), True, white)
             
     # if snake hits itself        
-    if (pygame.Rect.collidelist(Snake.rect, body[1:]) != -1):
+    if pygame.Rect.collidelist(Snake.rect, body[1:]) != -1:
         Snake.kill
         Snake = Player()
         body = []
         body.append(Snake)
         body_count = 0
-        if (score > high_score):
+        if score > high_score:
             high_score = score
+            high_score_text = high_score_font.render(("High Score: " + str(high_score)), True, white)
         score = 0
+        score_string = score_font.render(("Score: " + str(score)), True, white)
     
     # Show score
-    score_string = score_font.render(("Score: " + str(score)), True, white)
-    high_score_text = high_score_font.render(("High Score: " + str(high_score)), True, white)
     DISPLAYSURF.blit(score_string, (30, 30))
     DISPLAYSURF.blit(high_score_text, (30, 120))
     

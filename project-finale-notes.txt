@@ -1,0 +1,33 @@
+This was my first small scale personal Python project. Previously, I have only ever worked with Java and Haskell, and this was a way I wanted to increase my experience outside of university
+
+======================
+| What did we learn? |
+======================
+
+Weird things that python does:
+Consider the following code:
+foo = [0, 1, 2, 3, 4, 5, 6]
+for x in foo:
+    del foo[0]
+
+Code of a similar structure baffled me for a long time in the project. It will only run *3* times. I assume this is because Python is checking whether the length of the list equals the number of iterations, but it's good to know now
+
+Weaknesses:
+After looking at other implementations of the Snake game using the same Pygame modules, this could have been done better:
+1. I did not need so many classes
+- One implementation I looked at used an entirely mathematical approach and saved the snake object as an array
+2. Global variables
+- I should have used less, I think
+- My code is very messy, functions and classes disperesed in the same file. 
+3. Tying movement to the frame rate posed problems, especially regarding input
+- Maybe it's just a limitation of Pygame but mayeb tyign to it time would have worked better? idk man
+
+==============
+| Next Steps |
+==============
+
+from highest to lowest priority:
+1. Completing JavaScript course on KhanAcademy
+2. Find some open-source projects to contribute to
+3. Think of another project I can work on
+4. If I'm feeling especially uncreative, do another Pygame project. I'm somewhat hesitant to do this as the whole rendering system is a bit inefficent and clunky. If I do another game, I'd rather use a proper engine like Unity or GameMaker
